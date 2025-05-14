@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoML Execution Engine</title>
+    <style>
+        /* Redesign: Neutral Dark Tech Theme with Cyan Accent */
+        :root {
+            --bg-main: #1a1d21;          /* Charcoal background */
+            --bg-panel: #2c3036;         /* Slightly lighter panel background */
+            --bg-input: #25282d;         /* Input background */
+            --text-primary: #e1e3e6;     /* Main light text */
+            --text-secondary: #a0a8b4;   /* Subtler text (labels, etc.) */
+            --text-heading: #ffffff;     /* Pure white for headings */
+            --accent-cyan: #22d3ee;      /* Vibrant cyan */
+            --accent-cyan-darker: #1ab8d0;/* Darker cyan for hover */
+            --border-color: #40454c;      /* Subtle borders */
+            --error-bg: #442023;
+            --error-border: #79373d;
+            --error-text: #f8d7da;
+            --success-bg: #1c4a3a;
+            --success-text: #d4edda;
+            --link-color: var(--accent-cyan);
+            --font-stack: 'Roboto', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
+        body {
+            font-family: var(--font-stack);
+            line-height: 1.65;
+            padding: 20px;
+            margin: 20px auto;
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            max-width: 900px; /* Maintain max width */
+        }
+
+        .container {
+            background-color: var(--bg-panel);
+            padding: 30px 40px; /* More padding */
+            border-radius: 8px;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+            border: 1px solid var(--border-color);
+        }
+
+        h1 {
+            color: var(--text-heading);
+            text-align: center;
+            margin-bottom: 15px;
+            font-weight: 700;
+            font-size: 2em;
+            letter-spacing: 0.5px;
+        }
+        h1 + p { /* Style the intro paragraph */
+            text-align: center;
+            color: var(--text-secondary);
+            margin-bottom: 35px;
+            font-size: 1.1em;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 500; /* Slightly less bold */
+            color: var(--text-secondary);
+            font-size: 0.9em;
+            text-transform: uppercase; /* Uppercase labels */
+            letter-spacing: 0.5px;
+        }
+
+        input[type="text"],
+        input[type="file"],
+        select,
+        button {
+            width: 100%;
+            padding: 12px 14px;
+            box-sizing: border-box;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            font-size: 1rem;
+            background-color: var(--bg-input);
+            color: var(--text-primary);
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+         input[type="text"]::placeholder {
+            color: #6c737e;
+        }
+
+        input[type="text"]:focus,
+        select:focus {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.2); /* Cyan focus glow */
+            outline: none;
+        }
+
+        input[type="file"] {
+             border-style: dashed;
+             cursor: pointer;
+         }
+         input[type="file"]::-webkit-file-upload-button,
+         input[type="file"]::file-selector-button {
+             background: #495057; /* Use a neutral dark gray for file button */
+             color: var(--text-primary);
+             border: none;
+             padding: 8px 15px;
+             border-radius: 4px;
+             cursor: pointer;
+             margin-right: 12px;
+             font-weight: 500;
+             transition: background-color 0.2s ease;
+         }
+          input[type="file"]::-webkit-file-upload-button:hover,
+          input[type="file"]::file-selector-button:hover {
+              background: #5a6268;
+          }
+
+        button {
+            background: linear-gradient(to right, var(--accent-cyan), var(--accent-cyan-darker));
+            color: var(--bg-main); /* Dark text on bright button */
+            border: none;
+            cursor: pointer;
+            font-weight: 700; /* Bold button text */
+            transition: all 0.2s ease;
+            padding: 14px 15px;
+            margin-top: 10px;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 5px rgba(34, 211, 238, 0.2);
+        }
+        button:hover {
+            background: linear-gradient(to right, var(--accent-cyan-darker), var(--accent-cyan));
+            box-shadow: 0 4px 10px rgba(34, 211, 238, 0.3);
+            transform: translateY(-2px); /* Slight lift on hover */
+        }
+         button:active {
+             transform: translateY(0px);
+             box-shadow: 0 1px 3px rgba(34, 211, 238, 0.2);
+         }
+
+        /* Results Area Styling */
+        #results-container {
+            margin-top: 35px;
+            padding: 25px 30px;
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-panel); /* Match container background */
+            border-radius: 8px;
+            /* box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); Removed inset shadow */
+        }
+         #results-container h2, #results-container h3 {
+             color: var(--text-heading);
+             margin-top: 25px;
+             margin-bottom: 15px;
+             border-bottom: 1px solid var(--border-color);
+             padding-bottom: 10px;
+             font-weight: 600;
+         }
+         #results-container h2 { font-size: 1.5em;}
+         #results-container h3 { font-size: 1.2em; margin-top: 30px;} /* More space before subheadings */
+         #results-container ul { list-style: none; padding-left: 0; }
+         #results-container li { margin-bottom: 12px; }
+         #results-container strong { color: var(--text-secondary); margin-right: 8px; }
+         #results-container table {
+             width: 100%;
+             border-collapse: separate; /* Use separate for spacing */
+             border-spacing: 0; /* Reset spacing */
+             margin-top: 20px;
+             font-size: 0.9rem;
+             border: 1px solid var(--border-color); /* Border around table */
+             border-radius: 5px; /* Rounded corners for table */
+             overflow: hidden; /* Clip corners */
+         }
+         #results-container th, #results-container td {
+             border-bottom: 1px solid var(--border-color);
+             padding: 12px 15px; /* More padding */
+             text-align: left;
+             vertical-align: top;
+         }
+          #results-container tbody tr:last-child td {
+              border-bottom: none; /* Remove border from last row */
+          }
+         #results-container th {
+             background-color: var(--bg-input); /* Slightly different header bg */
+             font-weight: 600;
+             white-space: nowrap;
+             color: var(--text-secondary);
+             text-transform: uppercase; /* Uppercase headers */
+             font-size: 0.85em;
+             letter-spacing: 0.5px;
+         }
+          #results-container tbody tr:nth-child(odd) td {
+               background-color: rgba(255, 255, 255, 0.02); /* Very subtle zebra striping */
+           }
+         #results-container pre {
+             background-color: var(--bg-main); /* Match main background */
+             color: #b0bec5; /* Lighter grey for code */
+             padding: 15px;
+             border-radius: 4px;
+             overflow-x: auto;
+             margin: 8px 0;
+             font-size: 0.9rem;
+             border: 1px solid var(--border-color);
+             max-height: 200px;
+         }
+         #results-container details { margin-top: 5px; }
+         #results-container details > summary {
+             cursor: pointer;
+             font-weight: 500;
+             color: var(--link-color);
+             display: inline-block;
+             padding: 2px 6px;
+             border-radius: 3px;
+             background-color: rgba(34, 211, 238, 0.1);
+             font-size: 0.85em;
+         }
+         #results-container details[open] > summary {
+             background-color: rgba(34, 211, 238, 0.2);
+         }
+
+
+        #spinner {
+            display: none;
+            border: 5px solid var(--border-color);
+            border-top: 5px solid var(--accent-cyan);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1.2s linear infinite;
+            margin: 40px auto;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .error {
+            color: var(--error-text);
+            font-weight: 500;
+            margin-top: 15px;
+            background-color: var(--error-bg);
+            border: 1px solid var(--error-border);
+            padding: 15px 20px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+        }
+         .error strong { color: inherit; }
+         .error pre { background-color: #5a2a2e; color: var(--error-text); }
+
+        /* Download Link Styling */
+        #download-link-container { margin: 30px 0 10px 0; text-align: left; } /* Align left below best model info */
+        #download-link-container a {
+            display: inline-block;
+            padding: 10px 18px; /* Slightly smaller */
+            background-color: var(--accent-cyan);
+            color: var(--bg-main);
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            font-size: 0.95em;
+            box-shadow: 0 2px 4px rgba(34, 211, 238, 0.15);
+        }
+        #download-link-container a:hover {
+             background-color: var(--accent-cyan-darker);
+             box-shadow: 0 3px 7px rgba(34, 211, 238, 0.25);
+             transform: translateY(-1px);
+         }
+         #download-link-container a:active {
+              transform: translateY(0);
+              box-shadow: 0 1px 3px rgba(34, 211, 238, 0.15);
+          }
+
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="container">
+        <h1>AutoML Execution Engine</h1>
+        <p>Upload your dataset, configure the analysis, and get optimal model results.</p>
+
+        <form id="automl-form" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="file">Select CSV File</label>
+                <input type="file" id="file" name="file" accept=".csv" required>
+            </div>
+            <div class="form-group">
+                <label for="target_col">Target Column Name</label>
+                <input type="text" id="target_col" name="target_col" placeholder="e.g., SalePrice, ChurnStatus" required>
+            </div>
+            <div class="form-group">
+                <label for="task_type">Task Type</label>
+                <select id="task_type" name="task_type" required>
+                    <option value="" disabled selected>-- Select Task Type --</option>
+                    <option value="regression">Regression (Predict Numerical Value)</option>
+                    <option value="classifier">Classification (Predict Category)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="date_cols_str">Date Columns (Optional, comma-separated)</label>
+                <input type="text" id="date_cols_str" name="date_cols_str" placeholder="e.g., OrderDate, ShipDate, YearBuilt">
+            </div>
+            <button type="submit">Run Analysis</button>
+        </form>
+
+        <div id="spinner"></div>
+
+        <div id="results-container" style="display: none;">
+             <h2>Analysis Results</h2>
+             <div id="results-content"></div>
+             <div id="download-link-container"></div>
+        </div>
+
+    </div> <script>
+        const formElement = document.getElementById('automl-form');
+        const resultsContainerElement = document.getElementById('results-container');
+        const resultsContentElement = document.getElementById('results-content');
+        const spinnerElement = document.getElementById('spinner');
+        const downloadContainerElement = document.getElementById('download-link-container');
+
+        formElement.addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            resultsContainerElement.style.display = 'none';
+            resultsContentElement.innerHTML = ''; // Clear previous results content
+            resultsContentElement.classList.remove('error');
+            downloadContainerElement.innerHTML = '';
+            spinnerElement.style.display = 'block'; // Show spinner
+
+            const formData = new FormData(formElement);
+
+            try {
+                const response = await fetch('/automl/', {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'accept': 'application/json' }
+                });
+
+                spinnerElement.style.display = 'none';
+
+                let data;
+                let responseOk = response.ok;
+                try {
+                    data = await response.json();
+                } catch (e) {
+                    data = { detail: `Failed to parse server response. Status: ${response.status}. Response body: ${await response.text()}` };
+                    responseOk = false;
+                    console.error("Failed to parse JSON response:", e);
+                }
+
+                resultsContainerElement.style.display = 'block'; // Show results container
+
+                if (responseOk && data.message) {
+                    resultsContentElement.innerHTML = ''; // Clear processing message
+                    resultsContentElement.classList.remove('error');
+
+                    // 1. Display Basic Info
+                    const infoP = document.createElement('p');
+                    infoP.innerHTML = `<strong>Status:</strong> ${data.message}<br>
+                                     <strong>Task Type:</strong> ${data.task_type}<br>
+                                     <strong>Target Column:</strong> ${data.target_column}`;
+                    resultsContentElement.appendChild(infoP);
+
+                    // 2. Display Best Model Info & Download Link
+                    const bestModelHeader = document.createElement('h3');
+                    resultsContentElement.appendChild(bestModelHeader); // Add header first
+                    // Move download link container right after best model header/info
+                    resultsContentElement.appendChild(downloadContainerElement);
+
+                    if (data.best_model && !data.best_model.error) {
+                        bestModelHeader.textContent = `🏆 Best Model Found: ${data.best_model.name}`;
+                        const paramsList = document.createElement('ul');
+                        if (data.best_model.best_params && Object.keys(data.best_model.best_params).length > 0) {
+                            paramsList.innerHTML += `<li><strong>Best Parameters Found:</strong> <pre>${JSON.stringify(data.best_model.best_params, null, 2)}</pre></li>`;
+                        } else {
+                            paramsList.innerHTML += `<li><strong>Best Parameters Found:</strong> N/A</li>`;
+                        }
+                        resultsContentElement.insertBefore(paramsList, downloadContainerElement); // Insert params before download link
+
+                        // Add Download Link
+                        if (data.download_filename) {
+                            const link = document.createElement('a');
+                            link.href = `/download_model/${data.download_filename}`;
+                            link.textContent = 'Download Best Model (.pkl)';
+                            downloadContainerElement.appendChild(link);
+                        } else {
+                            downloadContainerElement.innerHTML = '<p><small>Best model could not be saved for download.</small></p>';
+                        }
+
+                    } else {
+                         bestModelHeader.textContent = '🏆 Best Model Found: None';
+                         const noBestModel = document.createElement('p');
+                         noBestModel.textContent = data.best_model?.error || 'Could not determine or save the best model.';
+                         noBestModel.style.fontWeight = 'bold';
+                         resultsContentElement.insertBefore(noBestModel, downloadContainerElement); // Insert error before download link placeholder
+                         downloadContainerElement.innerHTML = ''; // No download if no model
+                    }
+
+                    // 3. Display Model Comparison Table
+                    if (data.model_comparison && data.model_comparison.length > 0) {
+                        const tableHeader = document.createElement('h3');
+                        tableHeader.textContent = '📊 Model Comparison';
+                        resultsContentElement.appendChild(tableHeader);
+                        resultsContentElement.appendChild(generateComparisonTable(data.model_comparison));
+                    }
+
+                     // 4. Display Confusion Matrix
+                     if (data.confusion_matrix && Array.isArray(data.confusion_matrix) && data.confusion_matrix.length > 0) {
+                         const cmHeader = document.createElement('h3');
+                         cmHeader.textContent = '📉 Confusion Matrix (Best Model)';
+                         resultsContentElement.appendChild(cmHeader);
+                         resultsContentElement.appendChild(generateConfusionMatrixTable(data.confusion_matrix));
+                     }
+
+                } else {
+                    // Handle Application/HTTP errors
+                    resultsContentElement.innerHTML = `<strong>Error:</strong> ${response.status} ${response.statusText}<br><br><strong>Details:</strong>`;
+                    const errorDetails = document.createElement('pre');
+                    errorDetails.textContent = (typeof data.detail === 'object' ? JSON.stringify(data.detail, null, 2) : data.detail) || 'No further details provided.';
+                    resultsContentElement.appendChild(errorDetails);
+                    resultsContentElement.classList.add('error');
+                    console.error('Server returned an error:', response.status, data.detail);
+                }
+            } catch (error) {
+                spinnerElement.style.display = 'none';
+                resultsContainerElement.style.display = 'block';
+                resultsContentElement.innerHTML = `<strong>An error occurred during the request:</strong><br>${error.message}`;
+                resultsContentElement.classList.add('error');
+                console.error('Fetch error:', error);
+            }
+        });
+
+        // --- Helper function to generate comparison table ---
+        function generateComparisonTable(comparisonData) {
+            const table = document.createElement('table'); const thead = document.createElement('thead'); const headerRow = document.createElement('tr');
+            const headers = Object.keys(comparisonData[0]);
+            const headerConfig = { /* Using previous version's config */ 'Model': 'Model', 'CV Score': 'CV Score', 'Test R2': 'Test R²', 'Test MSE': 'Test MSE', 'Test Accuracy': 'Test Accuracy', 'Test Balanced Accuracy': 'Test Bal. Acc.', 'Test F1': 'Test F1', 'Best Params': 'Best Params' };
+            const displayHeaders = Object.keys(headerConfig).filter(h => headers.includes(h));
+            headers.forEach(h => { if (!displayHeaders.includes(h)) displayHeaders.push(h); });
+            displayHeaders.forEach(header => { const th = document.createElement('th'); th.textContent = headerConfig[header] || header; headerRow.appendChild(th); });
+            thead.appendChild(headerRow); table.appendChild(thead); const tbody = document.createElement('tbody');
+            comparisonData.forEach(modelData => {
+                const row = document.createElement('tr');
+                displayHeaders.forEach(header => {
+                    const td = document.createElement('td'); let value = modelData[header];
+                    if (typeof value === 'number') { td.textContent = value.toFixed(4); }
+                    else if (header === 'Best Params' && typeof value === 'object') {
+                         const paramsStr = JSON.stringify(value, null, 2);
+                         if(Object.keys(value).length === 0) { td.textContent = 'N/A'; }
+                         else { td.innerHTML = `<details><summary>View</summary><pre>${paramsStr}</pre></details>`; }
+                     }
+                    else { td.textContent = value === null || value === undefined || value === 'N/A' ? 'N/A' : value; }
+                    row.appendChild(td);
+                }); tbody.appendChild(row);
+            }); table.appendChild(tbody); return table;
+         }
+
+        // --- Helper function to generate confusion matrix table ---
+        function generateConfusionMatrixTable(cmData) {
+             const cmTable = document.createElement('table'); cmTable.style.margin = '10px 0'; cmTable.style.width='auto';
+             const cmTbody = document.createElement('tbody');
+             cmData.forEach(rowData => {
+                 const row = document.createElement('tr');
+                 rowData.forEach(cellData => {
+                     const td = document.createElement('td'); td.textContent = cellData; td.style.textAlign = 'center'; td.style.minWidth = '60px'; row.appendChild(td);
+                 }); cmTbody.appendChild(row);
+             }); cmTable.appendChild(cmTbody); return cmTable;
+        }
+    </script>
+
+</body>
+</html>
