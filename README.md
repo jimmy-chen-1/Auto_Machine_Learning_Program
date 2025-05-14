@@ -1,6 +1,7 @@
 # Auto_Machine_Learning_Program
 This is a website app that allow client submit their own file and automatic doing the machine learning and give the prediction pkl and metrics.
 
+---
 
 ![automl_summary](https://github.com/user-attachments/assets/9a6beb14-ba5c-47d5-90e4-438aea0019f6)
 
